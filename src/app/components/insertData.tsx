@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -12,11 +11,10 @@ const InsertData = () => {
     address: string;
   };
 
-  type getLength = {
-    length: string;
+  type response = {
+    data: data[];
+    status: number;
   };
-
-  const [index, setIndex] = useState<string>("");
 
   const {
     register,
@@ -31,16 +29,22 @@ const InsertData = () => {
     resolver: zodResolver(dataSchema),
   });
 
-  const clickInsert = (data: data) => {
-    getIndex();
-    const jsonData = JSON.stringify({ ...data, index: index });
-    console.log(jsonData);
+  const clickInsert = async (data: data) => {
+    const dataLen: string = await getIndex();
+    const jsonData = JSON.stringify({ ...data, index: dataLen });
+    console.log("jsonData:", jsonData);
+
+    // try {
+    //   const response = await fetch("/api/list");
+    // } catch (error) {
+    //   console.error("Error fetching length:", error);
+    // }
   };
 
-  const getIndex: () => Promise<void> = async () => {
-    const response = await fetch("/api/list/listData");
-    const data: getLength = await response.json();
-    setIndex(data.length);
+  const getIndex = async () => {
+    const response = await fetch("/api/list/");
+    const data: response = await response.json();
+    return (data.data.length + 1).toString();
   };
 
   return (
