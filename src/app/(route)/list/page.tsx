@@ -11,21 +11,20 @@ const List = () => {
     address: string;
   };
 
+  type response = {
+    data: data[];
+    status: number;
+  };
+
   const [dataList, setDataList] = useState<data[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
 
   const fetchDataList = async () => {
     try {
       const response = await fetch("/api/list");
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch length");
-      }
-
-      const data = await response.json();
-      setDataList(data);
-      console.log(data);
-      setColumns(Object.keys(data[0]));
+      const data: response = await response.json();
+      setDataList(data.data);
+      setColumns(Object.keys(data.data[0]));
     } catch (error) {
       console.error("Error fetching length:", error);
     }

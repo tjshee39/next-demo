@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -16,41 +16,21 @@ const filePath: string = path.join(
   "listData.json",
 );
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === "GET") {
-    try {
-      const dataList: data[] = await getDataList();
-
-      return res.status(200).json({ data: dataList });
-    } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch data" });
-    }
-  } else if (req.method === "POST") {
-    try {
-      const data: data = req.body;
-      await writeDataList(data);
-
-      return res.status(200).json({ message: "Data written successfully" });
-    } catch (error) {
-      return res.status(500).json({ error: "Failed to write data" });
-    }
-  } else {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-};
-
-export const getDataList = async () => {
+const getDataList = async () => {
   try {
     const data = await fs.readFile(filePath, "utf8");
     const parsedData: data[] = JSON.parse(data);
 
     return parsedData;
   } catch (error) {
-    throw new Error("Failed to fetch data");
+    return NextResponse.json(
+      { error: "Failed to fetch data" },
+      { status: 500 },
+    );
   }
 };
 
-export const writeDataList = async (data: data) => {
+const writeDataList = async (data: data) => {
   try {
     const existingData = await fs
       .readFile(filePath, "utf8")
@@ -64,7 +44,36 @@ export const writeDataList = async (data: data) => {
   }
 };
 
-// export const GET_LENGTH = async () => {
+export const GET = async () => {
+  try {
+    const dataList = await getDataList();
+    return NextResponse.json({ data: dataList }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch data" },
+      { status: 500 },
+    );
+  }
+};
+
+export const POST = async (req: Request) => {
+  try {
+    const newData: data = await req.json();
+    await writeDataList(newData);
+
+    return NextResponse.json(
+      { data: "Data written successfully" },
+      { status: 200 },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to write data" },
+      { status: 500 },
+    );
+  }
+};
+
+// const getLength = async () => {
 //   try {
 //     const data = await fs.readFile(filePath, "utf8");
 //     const length = JSON.parse(data).length + 1;
@@ -79,5 +88,3 @@ export const writeDataList = async (data: data) => {
 //     );
 //   }
 // };
-
-export default handler;
